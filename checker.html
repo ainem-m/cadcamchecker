@@ -1,0 +1,120 @@
+<style>
+    .checkboxes {
+        width: 50%;
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .checkbox {
+        display: inline-block;
+        width: 7%;
+    }
+</style>
+
+<div id="app">
+    <div>装着する部位を選択　現在選択されている歯: {{ selected }}</div>
+
+    <select v-model="selected">
+        <option disabled value="">装着する部位</option>
+        <option>17</option>
+        <option>16</option>
+        <option>15</option>
+        <option>14</option>
+        <option>13</option>
+        <option>12</option>
+        <option>11</option>
+        <option>21</option>
+        <option>22</option>
+        <option>23</option>
+        <option>24</option>
+        <option>25</option>
+        <option>26</option>
+        <option>27</option>
+        <option>37</option>
+        <option>36</option>
+        <option>35</option>
+        <option>34</option>
+        <option>33</option>
+        <option>32</option>
+        <option>31</option>
+        <option>41</option>
+        <option>42</option>
+        <option>43</option>
+        <option>44</option>
+        <option>45</option>
+        <option>46</option>
+        <option>47</option>
+    </select>
+    <div>
+
+        残存歯：欠損歯はチェックを外す
+    </div>
+    <div class="checkboxes">
+        <div v-for="(item, index) in items" :key="index" class="checkbox">
+            <input type="checkbox" :id="item.id" v-model="item.checked" />
+            <label :for="item.id">{{ item.label }}</label>
+        </div>
+    </div>
+
+    <div v-if="isOK">OK</div>
+    <div v-else>NG</div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            selected: "11",
+            items:
+            {
+                "17": { label: "7", checked: true },
+                "16": { label: "6", checked: true },
+                "15": { label: "5", checked: true },
+                "14": { label: "4", checked: true },
+                "13": { label: "3", checked: true },
+                "12": { label: "2", checked: true },
+                "11": { label: "1", checked: true },
+                "21": { label: "1", checked: true },
+                "22": { label: "2", checked: true },
+                "23": { label: "3", checked: true },
+                "24": { label: "4", checked: true },
+                "25": { label: "5", checked: true },
+                "26": { label: "6", checked: true },
+                "27": { label: "7", checked: true },
+                "37": { label: "7", checked: true },
+                "36": { label: "6", checked: true },
+                "35": { label: "5", checked: true },
+                "34": { label: "4", checked: true },
+                "33": { label: "3", checked: true },
+                "32": { label: "2", checked: true },
+                "31": { label: "1", checked: true },
+                "41": { label: "1", checked: true },
+                "42": { label: "2", checked: true },
+                "43": { label: "3", checked: true },
+                "44": { label: "4", checked: true },
+                "45": { label: "5", checked: true },
+                "46": { label: "6", checked: true },
+                "47": { label: "7", checked: true },
+            }
+
+        },
+        computed: {
+            isOK: function () {
+                let pos = Number(this.selected / 10);
+                let num = this.selected % 10;
+                if (num <= 5) {
+                    return true
+                } else if (num == 6) {
+                    if (this.items["17"].checked && this.items["27"].checked && this.items["37"].checked && this.items["47"].checked) {
+                        return true
+                    }
+                    else {
+                        return false
+                    }
+                }
+            }
+        }
+    });
+</script>
