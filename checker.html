@@ -106,7 +106,12 @@
                 let num = this.selected % 10;
                 if (num <= 5) {
                     return true
-                } else if (num == 6) {
+                } else {
+                    let other_pos = pos + (-1)**pos; //左右の反対側
+                    let opp_pos = pos + (-1)**(pos>2)*2; //対合
+                    let diag_pos = opp_pos + (-1)**opp_pos; //反対側の対合
+                    // 反対側の大臼歯咬合支持が無いならfalse
+                    if !(this.items[other_pos + "" + 6].checked && this.items[diag_pos +"" +6].checked ||
                     if (this.items["17"].checked && this.items["27"].checked && this.items["37"].checked && this.items["47"].checked) {
                         return true
                     }
