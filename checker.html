@@ -12,52 +12,38 @@
 </style>
 
 <div id="app">
-    <div>装着する部位を選択　現在選択されている歯: {{ selected }}</div>
+    <div>装着する部位を選択　現在選択されている歯: {{ pos+""+num }}</div>
 
-    <select v-model="selected">
+    <select v-model="pos">
         <option disabled value="">装着する部位</option>
-        <option>17</option>
-        <option>16</option>
-        <option>15</option>
-        <option>14</option>
-        <option>13</option>
-        <option>12</option>
-        <option>11</option>
-        <option>21</option>
-        <option>22</option>
-        <option>23</option>
-        <option>24</option>
-        <option>25</option>
-        <option>26</option>
-        <option>27</option>
-        <option>37</option>
-        <option>36</option>
-        <option>35</option>
-        <option>34</option>
-        <option>33</option>
-        <option>32</option>
-        <option>31</option>
-        <option>41</option>
-        <option>42</option>
-        <option>43</option>
-        <option>44</option>
-        <option>45</option>
-        <option>46</option>
-        <option>47</option>
+        <option value=1>右上</option>
+        <option value=2>左上</option>
+        <option value=3>左下</option>
+        <option value=4>右下</option>
+    </select>
+    <select v-model="num">
+        <option diabled value=""> 歯番</option>
+        <option>1</option>
+        <option>2</option>
+        <option>3</option>
+        <option>4</option>
+        <option>5</option>
+        <option>6</option>
+        <option>7</option>
     </select>
     <div>
 
         残存歯：欠損歯はチェックを外す
     </div>
     <div class="checkboxes">
-        <div v-for="(item, index) in items" :key="index" class="checkbox">
-            <input type="checkbox" :id="item.id" v-model="item.checked" />
-            <label :for="item.id">{{ item.label }}</label>
+        <div v-for="key in keys" class="checkbox">
+            <input type="checkbox" :id="items[key].id" v-model="items[key].checked" />
+            <label :for="items[key].id">{{ items[key].label }}</label>
         </div>
     </div>
 
-    <div v-if="isOK">OK</div>
-    <div v-else>NG</div>
+    <button v-on:click="check">check</button>
+    <h1>{{ result }}</h1>
 </div>
 
 
@@ -66,7 +52,14 @@
     new Vue({
         el: '#app',
         data: {
-            selected: "11",
+            pos: 1,
+            num: 6,
+            keys: [
+                "17", "16", "15", "14", "13", "12", "11",
+                "21", "22", "23", "24", "25", "26", "27",
+                "37", "36", "35", "34", "33", "32", "31",
+                "41", "42", "43", "44", "45", "46", "47",
+            ],
             items:
             {
                 "17": { label: "7", checked: true },
@@ -97,26 +90,53 @@
                 "45": { label: "5", checked: true },
                 "46": { label: "6", checked: true },
                 "47": { label: "7", checked: true },
-            }
-
+            },
+            result: "ここに結果が表示されます"
         },
-        computed: {
-            isOK: function () {
-                let pos = Number(this.selected / 10);
-                let num = this.selected % 10;
-                if (num <= 5) {
-                    return true
+        methods: {
+            check: function () {
+                let items = this.items;
+                items = JSON.parse(JSON.stringify(items))
+                let num = this.num;
+                let pos = Number(this.pos);
+                if (num <= 3) {
+                    this.result = "CAD/CAM冠（Ⅳ）";
+                    return
+                } else if (num <= 5) {
+                    this.result = "CAD/CAM冠(Ⅰ)またはCAD/CAM冠(Ⅱ)";
+                    return
                 } else {
-                    let other_pos = pos + (-1)**pos; //左右の反対側
-                    let opp_pos = pos + (-1)**(pos>2)*2; //対合
-                    let diag_pos = opp_pos + (-1)**opp_pos; //反対側の対合
-                    // 反対側の大臼歯咬合支持が無いならfalse
-                    if !(this.items[other_pos + "" + 6].checked && this.items[diag_pos +"" +6].checked ||
-                    if (this.items["17"].checked && this.items["27"].checked && this.items["37"].checked && this.items["47"].checked) {
-                        return true
+                    let other_pos = pos + (-1) ** (pos + 1); //左右の反対側
+                    let opp_pos = pos + (-1) ** (pos > 2) * 2; //対合
+                    let diag_pos = opp_pos + (-1) ** (opp_pos + 1); //反対側の対合
+                    let is_checked = (pos, num) => { return items[pos + "" + num].checked };
+                    // 以下デバッグ用
+                    console.log("pos, opp_pos, other_pos, diag_pos = ", pos, opp_pos, other_pos, diag_pos);
+                    console.log("同側6咬合支持", (is_checked(pos, 6) && is_checked(opp_pos, 6)));
+                    console.log("同側7咬合支持", (is_checked(pos, 7) && is_checked(opp_pos, 7)));
+                    console.log("反対6咬合支持", (is_checked(other_pos, 6) && is_checked(diag_pos, 6)));
+                    console.log("反対7咬合支持", (is_checked(other_pos, 7) && is_checked(diag_pos, 7)));
+                    // 反対側の大臼歯咬合支持が無いならだめ
+                    if (!((is_checked(other_pos, 6) && is_checked(diag_pos, 6)) ||
+                        (is_checked(other_pos, 7) && is_checked(diag_pos, 7)))) {
+                        this.result = "CAD/CAM冠(Ⅴ) ※反対側の咬合支持なし";
+                        return
+                    }
+                    // 同側に咬合支持が無いならだめ
+                    else if (!((num == 6 && is_checked(pos, 7) && is_checked(opp_pos, 7)) ||
+                        (num == 7 && is_checked(pos, 6) && is_checked(opp_pos, 6)))
+                    ) {
+                        // でも対合がなくて、隣在歯（まで？）に咬合支持があるならOK
+                        if (!is_checked(opp_pos, num) && is_checked(pos, num - 1) && is_checked(opp_pos, num - 1)) {
+                            this.result = "CAD/CAM冠(Ⅲ) ※隣在歯に咬合支持？"
+                            return
+                        }
+                        this.result = "CAD/CAM冠(Ⅴ) ※同側の咬合支持なし"
+                        return
                     }
                     else {
-                        return false
+                        this.result = "CAD/CAM冠(Ⅲ)"
+                        return
                     }
                 }
             }
