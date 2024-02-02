@@ -1,15 +1,24 @@
 <style>
     select {
-        font-size: 16pt;
+        font-size: 30pt;
+    }
+
+    input[type=checkbox] {
+        transform: scale(2);
+    }
+
+    button {
+        font-size: 42pt;
+        margin: 5%;
     }
 
     .checkboxes {
-        width: 50%;
         display: flex;
         flex-wrap: wrap;
     }
 
     .checkbox {
+        font-size: 30px;
         display: inline-block;
         width: 7%;
     }
@@ -37,12 +46,13 @@
     </select>
     <div>
 
+        <br>
         残存歯：欠損歯はチェックを外す　ポンティックは歯があるものとして扱う
     </div>
     <div class="checkboxes">
         <div v-for="key in keys" class="checkbox">
             <div v-if="key == pos+''+num">
-                <strong>選択中</strong>
+                <strong>★</strong>
             </div>
             <div v-else>
 
@@ -51,8 +61,7 @@
             </div>
         </div>
     </div>
-
-    <button v-on:click="check">check</button>
+    <br> <button v-on:click="check">check</button>
     <h1>{{ result }}</h1>
 </div>
 
