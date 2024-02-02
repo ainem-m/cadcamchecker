@@ -9,7 +9,7 @@
 
     button {
         font-size: 42pt;
-        margin: 5%;
+        margin: 2%;
     }
 
     .checkboxes {
@@ -25,7 +25,17 @@
 </style>
 
 <div id="app">
-    <div>装着する部位を選択　現在選択されている歯: {{ pos+""+num }}</div>
+    <h2>使い方</h2>
+    <p>①装着する部位を選択</p>
+    <p>②欠損歯のチェックを外す</p>
+    <p>③checkボタンを押す</p>
+    <p>→使えるブロックが表示されます！わあい！</p>
+    <div>
+        <h1>
+            ①装着する部位を選択
+        </h1>
+        現在選択されている歯: {{ pos+""+num }}
+    </div>
 
     <select v-model="pos">
         <option disabled value="">装着する部位</option>
@@ -47,7 +57,10 @@
     <div>
 
         <br>
-        残存歯：欠損歯はチェックを外す　ポンティックは歯があるものとして扱う
+        <h1>
+            ②残存歯
+        </h1>
+        欠損歯のチェックを外す　※ポンティックは歯があるものとして扱う
     </div>
     <div class="checkboxes">
         <div v-for="key in keys" class="checkbox">
@@ -61,6 +74,7 @@
             </div>
         </div>
     </div>
+    <h1>③check!</h1>
     <br> <button v-on:click="check">check</button>
     <h1>{{ result }}</h1>
 </div>
