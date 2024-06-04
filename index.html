@@ -14,6 +14,7 @@
 
     td {
         text-align: center;
+        vertical-align: middle;
         white-space: nowrap;
     }
 
@@ -35,7 +36,7 @@
 <div id="app">
     <h2>使い方</h2>
     <p>①装着する部位を選択</p>
-    <p>②欠損歯のチェックを外す</p>
+    <p>②欠損歯のチェックを外す※臼歯部のみ</p>
     <p>③checkボタンを押す</p>
     <p>→使えるブロックが表示されます！わあい！</p>
     <div>
@@ -73,8 +74,13 @@
                             <strong>★</strong>
                         </div>
                         <div v-else>
-                            <input type="checkbox" :id="items[key].id" v-model="items[key].checked" />
+                            <div v-if="key%10 >3 && key/10 < 3">
+                                <input type="checkbox" :id="items[key].id" v-model="items[key].checked" />
+                            </div>
                             <label :for="items[key].id">{{ items[key].label }}</label>
+                            <div v-if="key%10 >3 && key/10 >= 3">
+                                <input type="checkbox" :id="items[key].id" v-model="items[key].checked" />
+                            </div>
                         </div>
                     </div>
                 </td>
@@ -83,7 +89,14 @@
     </div>
     <h1>③check!</h1>
     <br> <button v-on:click="check">check</button>
-    <h1>{{ result }}</h1>
+    <div v-html="results[result]"></div>
+    <div v-if="result == 3 || result == 5">
+        摘要用:
+        <div><strong>反対側の大臼歯による咬合支持 {{mirror_vertical_stop ? "有" : "無"}}</div>
+        <div>同側の大臼歯による咬合支持 {{same_side_vertical_stop? "有" : "無"}}</div>
+        <div v-if="opp_pos_is_missing">対合が欠損で隣在歯まで咬合支持 {{stop_until_5? "有" : "無"}}</strong></div>
+    </div>
+    <small>画像はすべて松風のWebサイトからお借りしています。</small>
 </div>
 
 
@@ -131,7 +144,19 @@
                 "36": { label: "6", checked: true },
                 "37": { label: "7", checked: true },
             },
-            result: "ここに結果が表示されます"
+            result: 0,
+            mirror_vertical_stop: true,
+            same_side_vertical_stop: true,
+            opp_pos_is_missing: false,
+            stop_until_5: true,
+            results: [
+                "ここに結果が表示されます",
+                "<div><strong>CAD/CAM冠用材料(I)または(II)<strong></div><div><img src = '1.png'></div>",
+                "エラー",
+                "<div><strong>CAD/CAM冠用材料(III)または(V) 失活歯ならばエンドクラウンも可<strong></div><div><img src='3.png'><img src = '5.png'></div>",
+                "<div><strong>CAD/CAM冠用材料(IV)<strong></div><div><img src = '4.png'></div>",
+                "<div><strong>CAD/CAM冠用材料(V) 失活歯ならばエンドクラウンも可<strong></div><div><img src = '5.png'></div>"
+            ]
         },
         methods: {
             check: function () {
@@ -141,46 +166,42 @@
                 let pos = Number(this.pos);
                 const calc_pos = [[], [1, 2, 4, 3], [2, 1, 3, 4], [3, 4, 2, 1], [4, 3, 1, 2]]
                 if (num <= 3) {
-                    this.result = "CAD/CAM冠（Ⅳ）";
+                    this.result = 4;
                     return
                 } else if (num <= 5) {
-                    this.result = "CAD/CAM冠(Ⅰ)またはCAD/CAM冠(Ⅱ)";
+                    this.result = 1;
                     return
                 } else {
-                    let other_pos = calc_pos[pos][1];
+                    let mirror_pos = calc_pos[pos][1];
                     let opp_pos = calc_pos[pos][2];
                     let diag_pos = calc_pos[pos][3];
                     let is_checked = (pos, num) => { return items[pos + "" + num].checked };
                     // 以下デバッグ用
-                    console.log("pos, opp_pos, other_pos, diag_pos = ", pos, opp_pos, other_pos, diag_pos);
+                    console.log("pos, opp_pos, mirror_pos, diag_pos = ", pos, opp_pos, mirror_pos, diag_pos);
                     console.log("同側6咬合支持", (is_checked(pos, 6) && is_checked(opp_pos, 6)));
                     console.log("同側7咬合支持", (is_checked(pos, 7) && is_checked(opp_pos, 7)));
-                    console.log("反対6咬合支持", (is_checked(other_pos, 6) && is_checked(diag_pos, 6)));
-                    console.log("反対7咬合支持", (is_checked(other_pos, 7) && is_checked(diag_pos, 7)));
-                    // 反対側の大臼歯咬合支持が無いならだめ
-                    if (!((is_checked(other_pos, 6) && is_checked(diag_pos, 6)) ||
-                        (is_checked(other_pos, 7) && is_checked(diag_pos, 7)))) {
-                        this.result = "CAD/CAM冠(Ⅴ) ※反対側の咬合支持なし";
-                        return
-                    }
-                    // 同側に咬合支持が無いならだめ
-                    else if (!((num == 6 && is_checked(pos, 7) && is_checked(opp_pos, 7)) ||
-                        (num == 7 && is_checked(pos, 6) && is_checked(opp_pos, 6)))
-                    ) {
-                        // でも対合がなくて、隣在歯（まで？）に咬合支持があるならOK
-                        if (!is_checked(opp_pos, num) && is_checked(pos, num - 1) && is_checked(opp_pos, num - 1)) {
-                            this.result = "CAD/CAM冠(Ⅲ) ※隣在歯に咬合支持？"
-                            return
+                    console.log("反対6咬合支持", (is_checked(mirror_pos, 6) && is_checked(diag_pos, 6)));
+                    console.log("反対7咬合支持", (is_checked(mirror_pos, 7) && is_checked(diag_pos, 7)));
+                    this.mirror_vertical_stop = ((is_checked(mirror_pos, 6) && is_checked(diag_pos, 6)) ||
+                        (is_checked(mirror_pos, 7) && is_checked(diag_pos, 7)));
+                    this.same_side_vertical_stop = ((num == 6 && is_checked(pos, 7) && is_checked(opp_pos, 7)) ||
+                        (num == 7 && is_checked(pos, 6) && is_checked(opp_pos, 6)));
+                    this.opp_pos_is_missing = (!is_checked(opp_pos, num));
+                    this.stop_until_5 = (is_checked(pos, 4) && is_checked(opp_pos, 4)
+                        && is_checked(pos, 5) && is_checked(opp_pos, 5));
+                    if (this.mirror_vertical_stop) {
+                        if (this.same_side_vertical_stop || (this.opp_pos_is_missing && this.stop_until_5)) {
+                            this.result = 3;
                         }
-                        this.result = "CAD/CAM冠(Ⅴ) ※同側の咬合支持なし"
-                        return
-                    }
-                    else {
-                        this.result = "CAD/CAM冠(Ⅲ)"
-                        return
+                        else {
+                            this.result = 5
+                        };
+
                     }
                 }
+
             }
         }
-    });
+    }
+    );
 </script>
