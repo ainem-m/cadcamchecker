@@ -192,12 +192,14 @@
                     if (this.mirror_vertical_stop) {
                         if (this.same_side_vertical_stop || (this.opp_pos_is_missing && this.stop_until_5)) {
                             this.result = 3;
+                            return
                         }
-                        else {
-                            this.result = 5
-                        };
-
                     }
+                    
+                            this.result = 5;
+                    
+
+                    
                 }
 
             }
