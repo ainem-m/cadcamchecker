@@ -187,7 +187,7 @@
                     this.same_side_vertical_stop = ((num == 6 && is_checked(pos, 7) && is_checked(opp_pos, 7)) ||
                         (num == 7 && is_checked(pos, 6) && is_checked(opp_pos, 6)));
                     this.opp_pos_is_missing = (!is_checked(opp_pos, num));
-                    this.stop_until_5 = (is_checked(pos, 4) && is_checked(opp_pos, 4)
+                    this.stop_until_5 = num == 6 && (is_checked(pos, 4) && is_checked(opp_pos, 4)
                         && is_checked(pos, 5) && is_checked(opp_pos, 5));
                     if (this.mirror_vertical_stop) {
                         if (this.same_side_vertical_stop || (this.opp_pos_is_missing && this.stop_until_5)) {
@@ -195,11 +195,11 @@
                             return
                         }
                     }
-                    
-                            this.result = 5;
-                    
 
-                    
+                    this.result = 5;
+
+
+
                 }
 
             }
